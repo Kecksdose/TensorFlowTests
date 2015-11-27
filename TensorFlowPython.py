@@ -77,13 +77,28 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, "float"))
 # bar = ProgressBar(widgets=bar_widgets)
 
 sess.run(tf.initialize_all_variables())
-for i in range(1000):
-  batch = mnist.train.next_batch(100)
-  if i%100 == 0:
-    train_accuracy = accuracy.eval(feed_dict={
-        x:batch[0], y_: batch[1], keep_prob: 1.0})
-    print "step %d, training accuracy %g"%(i, train_accuracy)
-  train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
+
+# for i in range(20000):
+ # batch = mnist.train.next_batch(100)
+ # if i%100 == 0:
+ #   train_accuracy = accuracy.eval(feed_dict={
+ #       x:batch[0], y_: batch[1], keep_prob: 1.0})
+ #   print "step %d, training accuracy %g"%(i, train_accuracy)
+ # train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
+
+merged_summary_op = tf.merge_all_summaries()
+summary_writer = tf.train.SummaryWriter('/tmp/mnist_logs', sess.graph_def)
+total_step = 0
+
+while total_step < 500:
+	batch = mnist.train.next_batch(50)
+	total_step += 1
+	train_step.run(feed_dict={x: batch[0], y_: batch[1], keep_prob: 0.5})
+	if total_step % 100 == 0:
+		train_accuracy = accuracy.eval(feed_dict={x:batch[0], y_: batch[1], keep_prob: 1.0})
+   	#print("step %d, training accuracy %g"%(total_step, train_accuracy))
+   	summary_str = sess.run(merged_summary_op)
+   	summary_writer.add_summary(summary_str, total_step)
 
 print "test accuracy %g"%accuracy.eval(feed_dict={
     x: mnist.test.images, y_: mnist.test.labels, keep_prob: 1.0})
